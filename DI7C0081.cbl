@@ -1,7 +1,7 @@
       *_______________________                                          00010000
        IDENTIFICATION DIVISION.                                         00020000
       *_______________________                                          00030000
-       PROGRAM-ID. DI7C0810.                                            00040000
+       PROGRAM-ID. DI7C0081.                                            00040000
       *________________________________________________________________ 00050000
       *                                                                 00060000
       *            DIETARIO DE CARTERA PARA CONTINET                    00070000
@@ -102,7 +102,7 @@
        LINKAGE SECTION.                                                 01010000
       *_______________                                                  01020000
        01  DFHCOMMAREA.                                                 01030000
-           COPY DIWC8100.                                               01040028
+           COPY DIWC0081.                                               01040028
                                                                         01050000
        PROCEDURE DIVISION.                                              01060000
       *__________________                                               01070000
@@ -115,23 +115,23 @@
                                                                         01140000
        100-INICIO-PROGRAMA.                                             01150000
       *___________________                                              01160000
-           MOVE '00'                                  TO W8100-CODRETOR. 01170022
-           MOVE SPACES                                TO W8100-REFERENC. 01180022
-           MOVE 'CNE0141'                             TO W8100-DIRCAPLN. 01181048
+           MOVE '00'                                 TO W0081-CODRETOR. 01170022
+           MOVE SPACES                               TO W0081-REFERENC. 01180022
+           MOVE 'CNE0141'                            TO W0081-DIRCAPLN. 01181048
                                                                         01190000
-           IF  (W8100-CODIGO NOT NUMERIC)                                01200000
-                MOVE '08'                             TO W8100-CODRETOR  01210000
-                MOVE 'ERROR CODIGO NO NUMERICO'       TO W8100-REFERENC  01220036
-                MOVE 'DIE8108'                        TO W8100-DIRCAPLN  01221049
+           IF  (W0081-CODIGO NOT NUMERIC)                               01200000
+                MOVE '08'                            TO W0081-CODRETOR  01210000
+                MOVE 'ERROR CODIGO NO NUMERICO'      TO W0081-REFERENC  01220036
+                MOVE 'DIE8108'                       TO W0081-DIRCAPLN  01221049
                 PERFORM 900-FIN-PROGRAMA                                01230003
            END-IF.                                                      01240000
                                                                         01250000
-           IF  (W8100-CODSER = 01 OR 07 OR 08 OR 13)                     01260045
+           IF  (W0081-CODSER = 01 OR 07 OR 08 OR 13)                    01260045
                 CONTINUE                                                01260145
            ELSE                                                         01261045
-                MOVE '09'                             TO W8100-CODRETOR  01270041
-                MOVE 'ERROR CODIGO NO VALIDO  '       TO W8100-REFERENC  01280041
-                MOVE 'DIE8109'                        TO W8100-DIRCAPLN  01281049
+                MOVE '09'                            TO W0081-CODRETOR  01270041
+                MOVE 'ERROR CODIGO NO VALIDO  '      TO W0081-REFERENC  01280041
+                MOVE 'DIE8109'                       TO W0081-DIRCAPLN  01281049
                 PERFORM 900-FIN-PROGRAMA                                01290041
            END-IF.                                                      01300041
                                                                         01310041
@@ -142,27 +142,27 @@
        105-INICIALIZA-PAGINACION.
       *_____________________________
            MOVE 200                                   TO WS-MAXITEM
-           IF W8100-INDPAGI = 'S'
-                IF W8100-PAGSIZE IS NUMERIC AND
-                   W8100-PAGSIZE > 0        AND
-                   W8100-PAGSIZE <= 200
-                     MOVE W8100-PAGSIZE                TO WS-MAXITEM
+           IF W0081-INDPAGI = 'S'
+                IF W0081-PAGSIZE IS NUMERIC AND
+                   W0081-PAGSIZE > 0        AND
+                   W0081-PAGSIZE <= 200
+                     MOVE W0081-PAGSIZE                TO WS-MAXITEM
                 END-IF
            ELSE
-                MOVE SPACES                            TO W8100-PAGINAC
+                MOVE SPACES                            TO W0081-PAGINAC
            END-IF.
                                                                         01330000
        110-POSICIONA-PRIMERO.                                           01340006
       *_____________________                                            01350006
-           IF W8100-INDPAGI = 'S' AND W8100-PAGINAC NOT = SPACES
-                MOVE W8100-CODIGO                     TO WS-CODIGO
-                MOVE W8100-PAGINAC(1:33)              TO DIEC-KEY
+           IF W0081-INDPAGI = 'S' AND W0081-PAGINAC NOT = SPACES
+                MOVE W0081-CODIGO                     TO WS-CODIGO
+                MOVE W0081-PAGINAC(1:33)              TO DIEC-KEY
            ELSE
-                MOVE W8100-CODIGO                           TO DIEC-CODIGO    01360020
+                MOVE W0081-CODIGO                     TO DIEC-CODIGO    01360020
                                                          WS-CODIGO.     01370022
-                MOVE ZEROS                                 TO DIEC-FECOPE.   01380006
-                MOVE 0000000000                            TO DIEC-NUMBCO.   01390000
-                MOVE SPACES                                TO DIEC-SITUAC.   01400000
+                MOVE ZEROS                            TO DIEC-FECOPE.   01380006
+                MOVE 0000000000                       TO DIEC-NUMBCO.   01390000
+                MOVE SPACES                           TO DIEC-SITUAC.   01400000
            END-IF.
                                                                         01410000
            EXEC CICS STARTBR DATASET   ('DIDIECOB')                     01420000
@@ -178,23 +178,23 @@
            WHEN DFHRESP(LENGERR)                                        01520000
                 CONTINUE                                                01530016
            WHEN DFHRESP(NOTFND)                                         01540000
-                MOVE '97'                             TO W8100-CODRETOR  01550000
-                MOVE 'ERROR DIDIECOB CLAVE NO EXISTE' TO W8100-REFERENC  01560037
-                MOVE 'DIE8197'                        TO W8100-DIRCAPLN  01561049
+                MOVE '97'                             TO W0081-CODRETOR 01550000
+                MOVE 'ERROR DIDIECOB CLAVE NO EXISTE' TO W0081-REFERENC 01560037
+                MOVE 'DIE8197'                        TO W0081-DIRCAPLN 01561049
                 PERFORM 900-FIN-PROGRAMA                                01570003
            WHEN DFHRESP(NOTOPEN)                                        01580000
-                MOVE '98'                             TO W8100-CODRETOR  01590000
-                MOVE 'ERROR DIDIECOB CERRADO '        TO W8100-REFERENC  01600037
-                MOVE 'DIE8198'                        TO W8100-DIRCAPLN  01601049
+                MOVE '98'                             TO W0081-CODRETOR 01590000
+                MOVE 'ERROR DIDIECOB CERRADO '        TO W0081-REFERENC 01600037
+                MOVE 'DIE8198'                        TO W0081-DIRCAPLN 01601049
                 PERFORM 900-FIN-PROGRAMA                                01610003
            WHEN OTHER                                                   01620000
-                MOVE '99'                             TO W8100-CODRETOR  01630000
-                MOVE 'ERROR DIDIECOB STARTBR '        TO W8100-REFERENC  01640037
-                MOVE 'DIE8199'                        TO W8100-DIRCAPLN  01641049
+                MOVE '99'                             TO W0081-CODRETOR 01630000
+                MOVE 'ERROR DIDIECOB STARTBR '        TO W0081-REFERENC 01640037
+                MOVE 'DIE8199'                        TO W0081-DIRCAPLN 01641049
                 PERFORM 900-FIN-PROGRAMA                                01650003
            END-EVALUATE.                                                01660000
                                                                         01670000
-           IF W8100-INDPAGI = 'S' AND W8100-PAGINAC NOT = SPACES
+           IF W0081-INDPAGI = 'S' AND W0081-PAGINAC NOT = SPACES
                 PERFORM 115-DESCARTA-CURSOR-PAGINACION
            END-IF.
                                                                         01670000
@@ -217,9 +217,9 @@
            WHEN DFHRESP(ENDFILE)                                        02310000
                 MOVE 1                                TO WS-FIN         02320000
            WHEN OTHER                                                   02330000
-                MOVE '96'                             TO W8100-CODRETOR  02340000
-                MOVE 'ERROR DIDIECOB READNEXT'        TO W8100-REFERENC  02350037
-                MOVE 'DIE8196'                        TO W8100-DIRCAPLN  02351049
+                MOVE '96'                             TO W0081-CODRETOR 02340000
+                MOVE 'ERROR DIDIECOB READNEXT'        TO W0081-REFERENC 02350037
+                MOVE 'DIE8196'                        TO W0081-DIRCAPLN 02351049
                 PERFORM 900-FIN-PROGRAMA                                02360003
            END-EVALUATE.                                                02370000
                                                                         01670000
@@ -237,16 +237,16 @@
                    N                >= WS-MAXITEM.                      01770014
                                                                         01780039
            IF WS-FIN = 1
-                MOVE 'N'                               TO W8100-INDPAGI
-                MOVE SPACES                            TO W8100-PAGINAC
+                MOVE 'N'                               TO W0081-INDPAGI
+                MOVE SPACES                            TO W0081-PAGINAC
            ELSE
-                MOVE 'S'                               TO W8100-INDPAGI
-                MOVE DIEC-KEY                          TO W8100-PAGINAC(1:33)
+                MOVE 'S'                         TO W0081-INDPAGI
+                MOVE DIEC-KEY                    TO W0081-PAGINAC(1:33)
            END-IF.
 
-           MOVE    WS-MAXITEM                          TO W8100-PAGSIZE
+           MOVE    WS-MAXITEM                          TO W0081-PAGSIZE
 
-           MOVE    N                                  TO W8100-N         01790008
+           MOVE    N                                  TO W0081-N        01790008
                                                                         01800000
            EXEC CICS ENDBR   DATASET ('DIDIECOB')                       01810013
                              RESP    (RESPONSE)                         01820013
@@ -257,9 +257,9 @@
            WHEN DFHRESP(NORMAL)                                         01870000
                 CONTINUE                                                01880000
            WHEN OTHER                                                   01890000
-                MOVE '91'                             TO W8100-CODRETOR  01900000
-                MOVE 'ERROR DIDIECOB ENDBR   '        TO W8100-REFERENC  01910037
-                MOVE 'DIE8191'                        TO W8100-DIRCAPLN  01911049
+                MOVE '91'                             TO W0081-CODRETOR 01900000
+                MOVE 'ERROR DIDIECOB ENDBR   '        TO W0081-REFERENC 01910037
+                MOVE 'DIE8191'                        TO W0081-DIRCAPLN 01911049
                 PERFORM 900-FIN-PROGRAMA                                01920003
            END-EVALUATE.                                                01930000
                                                                         01940000
@@ -293,19 +293,19 @@
                 ELSE                                                    02220017
                    MOVE 1                             TO WS-FIN         02230023
                    IF WS-CODIGO-LEOS = 0                                02240019
-                      MOVE '97'                       TO W8100-CODRETOR  02250021
+                      MOVE '97'                       TO W0081-CODRETOR 02250021
                       MOVE 'ERROR DIDIECOB CODIGO NO EXIST'             02260037
-                                                      TO W8100-REFERENC  02270021
-                      MOVE 'DIE8197'                TO W8100-DIRCAPLN    02271049
+                                                      TO W0081-REFERENC 02270021
+                      MOVE 'DIE8197'                TO W0081-DIRCAPLN   02271049
                       PERFORM 900-FIN-PROGRAMA                          02280018
                    END-IF                                               02290018
                 END-IF                                                  02300017
            WHEN DFHRESP(ENDFILE)                                        02310000
                 MOVE 1                                TO WS-FIN         02320000
            WHEN OTHER                                                   02330000
-                MOVE '96'                             TO W8100-CODRETOR  02340000
-                MOVE 'ERROR DIDIECOB READNEXT'        TO W8100-REFERENC  02350037
-                MOVE 'DIE8196'                        TO W8100-DIRCAPLN  02351049
+                MOVE '96'                             TO W0081-CODRETOR 02340000
+                MOVE 'ERROR DIDIECOB READNEXT'        TO W0081-REFERENC 02350037
+                MOVE 'DIE8196'                        TO W0081-DIRCAPLN 02351049
                 PERFORM 900-FIN-PROGRAMA                                02360003
            END-EVALUATE.                                                02370000
                                                                         02380000
@@ -318,25 +318,25 @@
                                                                         02450000
        240-LLENA-SALIDA-TITULOS.                                        02460000
       *________________________                                         02470000
-           MOVE  WS-CODIGO                         TO W8100-CODIGO-TIT.  02480003
+           MOVE  WS-CODIGO                         TO W0081-CODIGO-TIT. 02480003
            EVALUATE WS-CODSER                                           02490027
                WHEN  7                                                  02500027
                WHEN  8                                                  02510027
-               WHEN 13 MOVE 'COBRANZA GARANTIA   ' TO W8100-SERVICIO-TIT 02520027
+               WHEN 13 MOVE 'COBRANZA GARANTIA   ' TO W0081-SERVICIO-TIT02520027
                WHEN OTHER                                               02530027
-                       MOVE 'COBRANZA LIBRE      ' TO W8100-SERVICIO-TIT 02540027
+                       MOVE 'COBRANZA LIBRE      ' TO W0081-SERVICIO-TIT02540027
            END-EVALUATE.                                                02550027
-           IF  WS-CODMON = 1 MOVE 'SOLES   '       TO W8100-MONEDA-TIT.  02560040
-           IF  WS-CODMON = 2 MOVE 'DOLARES '       TO W8100-MONEDA-TIT.  02570040
+           IF  WS-CODMON = 1 MOVE 'SOLES   '       TO W0081-MONEDA-TIT. 02560040
+           IF  WS-CODMON = 2 MOVE 'DOLARES '       TO W0081-MONEDA-TIT. 02570040
                                                                         02580000
        260-LLENA-SALIDA-DETALLE.                                        02590000
       *________________________                                         02600000
            ADD  1                                  TO N.                02610003
-           MOVE DIEC-FECOPE                        TO W8100-FECOPE (N).  02620007
+           MOVE DIEC-FECOPE                        TO W0081-FECOPE (N). 02620007
       *____TOTAL ABONADO______________________________________________  02621047
-           MOVE DIEC-INGRESO                       TO W8100-ABONOS (N).  02622047
+           MOVE DIEC-INGRESO                       TO W0081-ABONOS (N). 02622047
       *____TOTAL CARGADO______________________________________________  02630003
-           MOVE DIEC-IMPORTE                       TO W8100-CARGOS (N).  02640047
+           MOVE DIEC-IMPORTE                       TO W0081-CARGOS (N). 02640047
                                                                         02670000
        900-FIN-PROGRAMA.                                                02680000
       *________________                                                 02690000

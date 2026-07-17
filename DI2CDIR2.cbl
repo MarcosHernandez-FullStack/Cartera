@@ -61,8 +61,8 @@
       *
        01  RUT-RUTINAS.
            05 RUT-KN1CC260                PIC X(08) VALUE  'KN1CC260'.
-           05 RUT-DI7C8100                PIC X(08) VALUE 'DI7C8100'.
-           05 RUT-DI7C9100                PIC X(08) VALUE 'DI7C9100'.
+           05 RUT-DI7C0081                PIC X(08) VALUE 'DI7C0081'.
+           05 RUT-DI7C0091                PIC X(08) VALUE 'DI7C0091'.
            05 RUT-KN1CC300                PIC X(08) VALUE  'KN1CC300'.
        01  PGM.
            05 PGM-PROGRAMA                PIC X(08) VALUE  'DI2CDIR2'.
@@ -119,14 +119,14 @@
       *                COPYS AREAS DE TRABAJO                        *
       *--------------------------------------------------------------*
       *
-      *-----------  COPY AREA DE TRABAJO DE LA RUTINA DI7C8100         *
-       01 WS-DIWC8100.
-           COPY DIWC8100.
+      *-----------  COPY AREA DE TRABAJO DE LA RUTINA DI7C0081         *
+       01 WS-DIWC0081.
+           COPY DIWC0081.
       *
-      *-----------  COPY AREA DE TRABAJO DE LA RUTINA DI7C9100
+      *-----------  COPY AREA DE TRABAJO DE LA RUTINA DI7C0091
       *
-       01 WS-DIWC9100.
-           COPY DIWC9100.
+       01 WS-DIWC0091.
+           COPY DIWC0091.
       *
       *-----------  COPY AREA DE TRABAJO DE COLECTOR KN1CC260          *
        01  REG-C26-KNDCC260.                                            01350000
@@ -324,27 +324,27 @@
       *
        FNEG-1000-RELAC-COBRANZA.
       *
-           INITIALIZE W8100-DIWC8100
+           INITIALIZE W0081-DIWC0081
 
-           MOVE DIR2-CODCTAA(1:12)    TO   W8100-CODIGO
-           MOVE DIR2-INDPAGI          TO   W8100-INDPAGI
-           MOVE DIR2-PAGINAC          TO   W8100-PAGINAC
-           MOVE DIR2-PAGSIZE          TO   W8100-PAGSIZE
+           MOVE DIR2-CODCTAA(1:12)    TO   W0081-CODIGO
+           MOVE DIR2-INDPAGI          TO   W0081-INDPAGI
+           MOVE DIR2-PAGINAC          TO   W0081-PAGINAC
+           MOVE DIR2-PAGSIZE          TO   W0081-PAGSIZE
       *
            EXEC CICS
-              LINK PROGRAM(RUT-DI7C8100)
-              COMMAREA(W8100-DIWC8100)
+              LINK PROGRAM(RUT-DI7C0081)
+              COMMAREA(W0081-DIWC0081)
               RESP(WS-RESPUESTA)
            END-EXEC
       *
            IF WS-RESPUESTA NOT EQUAL DFHRESP(NORMAL)
       *    AND +44
-      *       MOVE  RUT-DI7C8100       TO CAA-PROGRAMA-ERR
-              MOVE  W8100-REFERENC      TO CAA-REFER-AUTO
+      *       MOVE  RUT-DI7C0081       TO CAA-PROGRAMA-ERR
+              MOVE  W0081-REFERENC      TO CAA-REFER-AUTO
       *       MOVE  CON-SIN-ROLLBACK   TO CAA-CNYRELCE
               MOVE  WS-RESPUESTA       TO WS-RESPUESTA-N
-      *       MOVE  W8100-DIRCAPLN      TO CAA-CNRCAPLN
-              MOVE  W8100-CODRETOR      TO CAA-VAR1-AVISO1
+      *       MOVE  W0081-DIRCAPLN      TO CAA-CNRCAPLN
+              MOVE  W0081-CODRETOR      TO CAA-VAR1-AVISO1
               MOVE  ' EIBRESP NO OK '  TO CAA-VAR1-AVISO2
               PERFORM 4100-MOVER-ERRORES-CICS
               PERFORM 4500-FIN-ANORMAL
@@ -354,11 +354,11 @@
       *       MOVE '202S'                     TO CAA-ID-FORMATO01
               MOVE 1                          TO CAA-NUM-ITEM-SELEC
       *       MOVE LENGTH OF REG-DIECBSS2     TO CAA-LGTH-FORMATO01
-              MOVE W8100-CODIGO-TIT            TO BSS2-CODCARTERA
-              MOVE W8100-SERVICIO-TIT          TO BSS2-SERVICIO
-              MOVE W8100-MONEDA-TIT            TO BSS2-DIVISA
-              MOVE W8100-INDPAGI               TO BSS2-INDPAGI
-              MOVE W8100-PAGINAC               TO BSS2-PAGINAC
+              MOVE W0081-CODIGO-TIT            TO BSS2-CODCARTERA
+              MOVE W0081-SERVICIO-TIT          TO BSS2-SERVICIO
+              MOVE W0081-MONEDA-TIT            TO BSS2-DIVISA
+              MOVE W0081-INDPAGI               TO BSS2-INDPAGI
+              MOVE W0081-PAGINAC               TO BSS2-PAGINAC
               MOVE WSC-DIECBSS2               TO WSV-TS-FORMATO         05582104
               MOVE REG-DIECBSS2               TO WSV-TS-DETALLE         05582120
               MOVE LENGTH OF REG-DIECBSS2     TO WS-TSLENGTH            05582130
@@ -374,19 +374,19 @@
       *
        FNEG-1100-LEE-OCCURS-COB.
       *-------------------------*
-           IF WS-IE09 <= W8100-N
+           IF WS-IE09 <= W0081-N
              INITIALIZE REG-DIECBDS1  WSV-SALIDA-TS
              MOVE WSC-DIECBDS1             TO WSV-TS-FORMATO            05582104
              ADD  1                        TO WS-ITEMS-TOT
-             MOVE W8100-FECOPE(WS-IE09)     TO WS-FECHA-8
+             MOVE W0081-FECOPE(WS-IE09)     TO WS-FECHA-8
              MOVE WS-FECHA-8(1:4)          TO WS-FECHA-10(1:4)
              MOVE '-'                      TO WS-FECHA-10(5:1)
              MOVE WS-FECHA-8(5:2)          TO WS-FECHA-10(6:2)
              MOVE '-'                      TO WS-FECHA-10(8:1)
              MOVE WS-FECHA-8(7:2)          TO WS-FECHA-10(9:2)
              MOVE WS-FECHA-10              TO BDS1-FECOPER
-             MOVE W8100-CARGOS(WS-IE09)     TO BDS1-TOTCAR
-             MOVE W8100-ABONOS(WS-IE09)     TO BDS1-TOTABO
+             MOVE W0081-CARGOS(WS-IE09)     TO BDS1-TOTCAR
+             MOVE W0081-ABONOS(WS-IE09)     TO BDS1-TOTABO
              ADD  1                        TO WS-IE09
              MOVE REG-DIECBDS1             TO WSV-TS-DETALLE            05584504
              MOVE LENGTH OF REG-DIECBDS1   TO WS-TSLENGTH               05584803
@@ -401,27 +401,27 @@
       *
        FNEG-2000-RELAC-DESCUENTO.
       *
-           INITIALIZE W9100-DIWC9100
+           INITIALIZE W0091-DIWC0091
 
-           MOVE DIR2-CODCTAA(1:12)    TO   W9100-CODIGO
-           MOVE DIR2-INDPAGI          TO   W9100-INDPAGI
-           MOVE DIR2-PAGINAC          TO   W9100-PAGINAC
-           MOVE DIR2-PAGSIZE          TO   W9100-PAGSIZE
+           MOVE DIR2-CODCTAA(1:12)    TO   W0091-CODIGO
+           MOVE DIR2-INDPAGI          TO   W0091-INDPAGI
+           MOVE DIR2-PAGINAC          TO   W0091-PAGINAC
+           MOVE DIR2-PAGSIZE          TO   W0091-PAGSIZE
       *
            EXEC CICS
-              LINK PROGRAM(RUT-DI7C9100)
-              COMMAREA(W9100-DIWC9100)
+              LINK PROGRAM(RUT-DI7C0091)
+              COMMAREA(W0091-DIWC0091)
               RESP(WS-RESPUESTA)
            END-EXEC
       *
            IF WS-RESPUESTA NOT EQUAL DFHRESP(NORMAL)
       *    AND +44
-      *       MOVE  RUT-DI7C9100       TO CAA-PROGRAMA-ERR
-              MOVE  W9100-REFERENC      TO CAA-REFER-AUTO
+      *       MOVE  RUT-DI7C0091       TO CAA-PROGRAMA-ERR
+              MOVE  W0091-REFERENC      TO CAA-REFER-AUTO
       *       MOVE  CON-SIN-ROLLBACK   TO CAA-CNYRELCE
               MOVE  WS-RESPUESTA       TO WS-RESPUESTA-N
-      *       MOVE  W9100-DIRCAPLN      TO CAA-CNRCAPLN
-              MOVE  W9100-CODRETOR      TO CAA-VAR1-AVISO1
+      *       MOVE  W0091-DIRCAPLN      TO CAA-CNRCAPLN
+              MOVE  W0091-CODRETOR      TO CAA-VAR1-AVISO1
               MOVE  ' EIBRESP NO OK '  TO CAA-VAR1-AVISO2
               PERFORM 4100-MOVER-ERRORES-CICS
               PERFORM 4500-FIN-ANORMAL
@@ -431,11 +431,11 @@
       *       MOVE '202S'                     TO CAA-ID-FORMATO01
               MOVE 1                          TO CAA-NUM-ITEM-SELEC
       *       MOVE LENGTH OF REG-DIECBSS2    TO CAA-LGTH-FORMATO01
-              MOVE W9100-CODIGO-TIT            TO BSS2-CODCARTERA
-              MOVE W9100-SERVICIO-TIT          TO BSS2-SERVICIO
-              MOVE W9100-MONEDA-TIT            TO BSS2-DIVISA
-              MOVE W9100-INDPAGI               TO BSS2-INDPAGI
-              MOVE W9100-PAGINAC               TO BSS2-PAGINAC
+              MOVE W0091-CODIGO-TIT            TO BSS2-CODCARTERA
+              MOVE W0091-SERVICIO-TIT          TO BSS2-SERVICIO
+              MOVE W0091-MONEDA-TIT            TO BSS2-DIVISA
+              MOVE W0091-INDPAGI               TO BSS2-INDPAGI
+              MOVE W0091-PAGINAC               TO BSS2-PAGINAC
               MOVE WSC-DIECBSS2               TO WSV-TS-FORMATO         05582104
               MOVE REG-DIECBSS2              TO WSV-TS-DETALLE          05582120
               MOVE LENGTH OF REG-DIECBSS2    TO WS-TSLENGTH             05582130
@@ -451,19 +451,19 @@
       *
        FNEG-1100-LEE-OCCURS-DSCTO.
       *---------------------------*
-           IF WS-IE09 <= W9100-N
+           IF WS-IE09 <= W0091-N
              INITIALIZE REG-DIECBDS1  WSV-SALIDA-TS
              MOVE WSC-DIECBDS1             TO WSV-TS-FORMATO            05582104
              ADD  1                        TO WS-ITEMS-TOT
-             MOVE W9100-FECOPE(WS-IE09)     TO WS-FECHA-8
+             MOVE W0091-FECOPE(WS-IE09)     TO WS-FECHA-8
              MOVE WS-FECHA-8(1:4)          TO WS-FECHA-10(1:4)
              MOVE '-'                      TO WS-FECHA-10(5:1)
              MOVE WS-FECHA-8(5:2)          TO WS-FECHA-10(6:2)
              MOVE '-'                      TO WS-FECHA-10(8:1)
              MOVE WS-FECHA-8(7:2)          TO WS-FECHA-10(9:2)
              MOVE WS-FECHA-10              TO BDS1-FECOPER
-             MOVE W9100-CARGOS(WS-IE09)    TO BDS1-TOTCAR
-             MOVE W9100-ABONOS(WS-IE09)    TO BDS1-TOTABO
+             MOVE W0091-CARGOS(WS-IE09)    TO BDS1-TOTCAR
+             MOVE W0091-ABONOS(WS-IE09)    TO BDS1-TOTABO
              ADD  1                        TO WS-IE09
              MOVE REG-DIECBDS1            TO WSV-TS-DETALLE             05584504
              MOVE LENGTH OF REG-DIECBDS1  TO WS-TSLENGTH                05584803
