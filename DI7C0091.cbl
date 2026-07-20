@@ -160,9 +160,9 @@
            ELSE
                 MOVE W0091-CODIGO                     TO DIED-CODIGO    01360000
                                                          WS-CODIGO      01370002
-                MOVE ZEROS                            TO DIED-FECOPE   01380000
-                MOVE 0000000000                       TO DIED-NUMBCO   01390000
-                MOVE SPACES                           TO DIED-SITUAC   01400000
+                MOVE ZEROS                            TO DIED-FECOPE    01380000
+                MOVE 0000000000                       TO DIED-NUMBCO    01390000
+                MOVE SPACES                           TO DIED-SITUAC    01400000
            END-IF.
                                                                         01410000
            EXEC CICS STARTBR DATASET   ('DIDIEDES')                     01420000
