@@ -159,10 +159,10 @@
                 MOVE W0081-PAGINAC(1:33)              TO DIEC-KEY
            ELSE
                 MOVE W0081-CODIGO                     TO DIEC-CODIGO    01360020
-                                                         WS-CODIGO.     01370022
-                MOVE ZEROS                            TO DIEC-FECOPE.   01380006
-                MOVE 0000000000                       TO DIEC-NUMBCO.   01390000
-                MOVE SPACES                           TO DIEC-SITUAC.   01400000
+                                                         WS-CODIGO      01370022
+                MOVE ZEROS                            TO DIEC-FECOPE    01380006
+                MOVE 0000000000                       TO DIEC-NUMBCO    01390000
+                MOVE SPACES                           TO DIEC-SITUAC    01400000
            END-IF.
                                                                         01410000
            EXEC CICS STARTBR DATASET   ('DIDIECOB')                     01420000
@@ -227,7 +227,7 @@
       *__________________                                               01690000
            PERFORM 240-LLENA-SALIDA-TITULOS.                            01710016
            IF WS-FIN = 0
-                PERFORM 220-LEER-NEXT.                                  01700016
+                PERFORM 220-LEER-NEXT                                   01700016
                 PERFORM 230-LLENA-SALIDA                                01720016
            END-IF.
                                                                         01730016

@@ -159,10 +159,10 @@
                 MOVE W0091-PAGINAC(1:33)              TO DIED-KEY
            ELSE
                 MOVE W0091-CODIGO                     TO DIED-CODIGO    01360000
-                                                         WS-CODIGO.     01370002
-                MOVE ZEROS                            TO DIED-FECOPE.   01380000
-                MOVE 0000000000                       TO DIED-NUMBCO.   01390000
-                MOVE SPACES                           TO DIED-SITUAC.   01400000
+                                                         WS-CODIGO      01370002
+                MOVE ZEROS                            TO DIED-FECOPE   01380000
+                MOVE 0000000000                       TO DIED-NUMBCO   01390000
+                MOVE SPACES                           TO DIED-SITUAC   01400000
            END-IF.
                                                                         01410000
            EXEC CICS STARTBR DATASET   ('DIDIEDES')                     01420000
@@ -227,7 +227,7 @@
       *__________________                                               01690000
            PERFORM 240-LLENA-SALIDA-TITULOS.                            01710000
            IF WS-FIN = 0
-                PERFORM 220-LEER-NEXT.                                  01700000
+                PERFORM 220-LEER-NEXT                                   01700000
                 PERFORM 230-LLENA-SALIDA                                01720000
            END-IF.
                                                                         01730000
