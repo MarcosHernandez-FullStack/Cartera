@@ -31,6 +31,11 @@
        01  WS-FECVEN                  PIC X(10)  VALUE SPACES.          00000300
        01  II                         PIC 9(03)  VALUE ZEROS.           00000300
        01  SW-FIN                     PIC 9      VALUE ZEROS.           00000300
+      *PAGSIZE-INI
+       01  SW-HAY-MAS                 PIC 9      VALUE ZEROS.
+       01  WS-PAGSIZE                 PIC 9(03)  VALUE ZEROS.
+       01  WS-MAX-PAGSIZE             PIC 9(03)  VALUE 100.
+      *PAGSIZE-FIN
        01  W-ACON-REG-LEN             PIC S9(04) COMP      VALUE +145.
        01  W-LONG-REG-PDTE            PIC S9(04) COMP      VALUE +0350.
        01  W-ACON-KEY-LEN             PIC S9(04) COMP      VALUE +28.
@@ -115,7 +120,27 @@
                 MOVE 'ERROR COD CEN NONUMERICO' TO  W460-REFERENC       00006740
                 PERFORM  900-FIN-PROGRAMA.                              00002030
 
+      *PAGSIZE-INI
+           PERFORM 110-VALIDA-PAGSIZE.
+      *PAGSIZE-FIN
+
            PERFORM 120-POSICIONA-PRIMER-REG.
+
+      *PAGSIZE-INI
+       110-VALIDA-PAGSIZE.
+      *-------------------*
+      *    EL MAXIMO ES EL OCCURS DE W460-OPERACIONES EN DIWC46R (100).
+      *    PAGSIZE NO INFORMADO (CERO / NO NUMERICO) = COMPATIBILIDAD
+      *    CON LOS CONSUMIDORES ACTUALES, SE ASUME EL MAXIMO.
+      *    PAGSIZE MAYOR AL MAXIMO SE LIMITA AL MAXIMO.
+           IF  W460-PAGSIZE NOT NUMERIC        OR
+               W460-PAGSIZE = ZEROS            OR
+               W460-PAGSIZE > WS-MAX-PAGSIZE
+               MOVE WS-MAX-PAGSIZE   TO  WS-PAGSIZE
+           ELSE
+               MOVE W460-PAGSIZE     TO  WS-PAGSIZE
+           END-IF.
+      *PAGSIZE-FIN
 
 
                                                                         00002770
@@ -152,33 +177,38 @@
 
            MOVE W460-NUM-CODCEN-ENT       TO  W-NUM-CODCEN-INTO
            MOVE ZEROS                     TO  II
+      *PAGSIZE-INI
+      *    SE LLENAN COMO MAXIMO WS-PAGSIZE OCURRENCIAS. EL CORTE
+      *    POR CAMBIO DE CENTRO YA LO RESUELVE 211-LEER-NEXT (SW-FIN).
            PERFORM 210-OBTIENE-DATOS                                    00002160
-                          UNTIL II      > 101   OR
-                          SW-FIN        = 1     OR
-                          W460-NUM-CODCEN-ENT  NOT = W-NUM-CODCEN-INTO.
+                          UNTIL II     >= WS-PAGSIZE  OR
+                          SW-FIN        = 1.
 
+      *    LECTURA DE ADELANTO: DETERMINA SI QUEDAN REGISTROS SIN
+      *    DEVOLVER, SIN CARGARLOS EN LA TABLA.
            IF SW-FIN = 0
-              IF W460-NUM-CODCEN-ENT NOT = W-NUM-CODCEN-INTO
-                 MOVE 1         TO SW-FIN
-              END-IF
+              PERFORM 212-VERIFICA-HAY-MAS
            END-IF.
 
-           IF SW-FIN = 1
-              MOVE WS-OCURRENCIAS     TO W460-OCURRENCIAS
+           MOVE WS-OCURRENCIAS        TO W460-OCURRENCIAS
+
+           IF SW-HAY-MAS = 1
+              MOVE 'S'                TO W460-INDIC-PAGINAC
+              MOVE  W-NUM-CODCEN-INTO TO W460-CODCEN-PAGINAC
+              MOVE  W-FECVEN-INTO     TO W460-FECVEN-PAGINAC
+              MOVE  W-NRODOC-INTO     TO W460-NRODOC-PAGINAC
+           ELSE
               MOVE 'N'                TO W460-INDIC-PAGINAC
               MOVE ZEROS              TO W460-CODCEN-PAGINAC
+              MOVE SPACES             TO W460-FECVEN-PAGINAC
+              MOVE SPACES             TO W460-NRODOC-PAGINAC
               IF WS-OCURRENCIAS = 0
                 MOVE '10'              TO  W460-CODRETOR                00006740
                 MOVE 'NO HAY REGISTRO' TO  W460-REFERENC                00006740
                 PERFORM  900-FIN-PROGRAMA                               00002030
               END-IF
-           ELSE
-              MOVE WS-OCURRENCIAS     TO W460-OCURRENCIAS
-              MOVE 'S'                TO W460-INDIC-PAGINAC
-              MOVE  W-NUM-CODCEN-INTO TO W460-CODCEN-PAGINAC
-              MOVE  W-FECVEN-INTO     TO W460-FECVEN-PAGINAC
-              MOVE  W-NRODOC-INTO     TO W460-NRODOC-PAGINAC
            END-IF.
+      *PAGSIZE-FIN
 
            EXEC CICS ENDBR    DATASET   (WS-ARCHIVO-MAES)
                               RESP      (RESPONSE)
@@ -328,6 +358,24 @@
                   MOVE     1 TO SW-FIN
                END-IF
            END-IF.
+
+      *PAGSIZE-INI
+       212-VERIFICA-HAY-MAS.
+      *---------------------*
+      *    AVANZA HASTA EL PRIMER REGISTRO NO CANCELADO QUE NO ENTRO
+      *    EN ESTA PAGINA. SI EXISTE, SU CLAVE (W-ACON-KEY-INTO) ES EL
+      *    ARGUMENTO DE BUSQUEDA DE LA PAGINA SIGUIENTE.
+           MOVE ZEROS TO SW-HAY-MAS
+           PERFORM UNTIL SW-FIN = 1  OR  SW-HAY-MAS = 1
+              PERFORM 211-LEER-NEXT
+              IF SW-FIN NOT = 1
+                 PERFORM 210-BUSCA-CANCELADO
+                 IF PCAR-SWCANC = 0
+                    MOVE 1 TO SW-HAY-MAS
+                 END-IF
+              END-IF
+           END-PERFORM.
+      *PAGSIZE-FIN
 
                                                                         00002860
       *================*                                                00009250

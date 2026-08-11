@@ -236,6 +236,15 @@
               PERFORM 3000-FIN
            END-IF
 
+      *PAGSIZE-INI
+      *    SI EL CANAL NO INFORMA TAMANO DE PAGINA SE NORMALIZA A CERO
+      *    Y LA RUTINA DI6C0461 ASUME EL MAXIMO. LA VALIDACION CONTRA
+      *    EL MAXIMO (100) LA RESUELVE LA RUTINA.
+           IF BE02-BPAGSIZE IS NOT NUMERIC
+              MOVE ZEROS                       TO BE02-BPAGSIZE
+           END-IF
+      *PAGSIZE-FIN
+
            IF BE02-BINDPAGI NOT = ' ' AND NOT = 'S'
               MOVE SPACES                      TO BE02-BINDPAGI
            END-IF
@@ -332,6 +341,9 @@
       ***************************
            INITIALIZE W-DIWC46R
            MOVE BE02-USUARIO1                   TO W460-NUM-CODCEN-ENT
+      *PAGSIZE-INI
+           MOVE BE02-BPAGSIZE                   TO W460-PAGSIZE
+      *PAGSIZE-FIN
 
            IF BE02-BINDPAGI = C-SI THEN
               MOVE BE02-BPAGINAC(1:8)            TO W460-NUM-CODCEN-ENT
