@@ -1,9 +1,11 @@
        IDENTIFICATION DIVISION.                                         00000010
-       PROGRAM-ID. DI6C0460.                                            00000020
+       PROGRAM-ID. DI6C0461.                                            00000020
       *************************************************************     00000030
       **                                                         **     00000030
       **  CONSULTA  -    PENDIENTES   CARTERA                    **     00000030
       **  CONTINET  -    PAGO LETRAS  Y FACTURAS                 **     00000030
+      **6762016047-2 P023664 11-11-2016 CAVALI - INGRESO DE FACTURAS
+      **SDA-34398 ENT.& CIB. 15-02-2022 INDI.DE RENOVACI DE FACT **
       *************************************************************     00000030
                                                                         00000110
        ENVIRONMENT DIVISION.                                            00000120
@@ -54,9 +56,32 @@
            10 W-IMPORTE-ACT-INTO             PIC S9(15)V99.
            10 W-TIPDOC-INTO                  PIC X.
            10 FILLER                         PIC X(47).
+      *6762016047-2-INI
+       01  CONSTANTES.
+           05 WSC-14                         PIC 9(02) VALUE 14.
+
+       01  WSV-PCAR-NUMCLI.
+           05 WSV-PCAR-NUMCLI-1              PIC X(04) VALUE SPACES.
+           05 WSV-PCAR-NUMCLI-2              PIC 9(08) COMP-3.
+           05 WSV-PCAR-NUMCLI-3              PIC 9(01) VALUE 0.
+       01  WSV-TALON-C                       PIC X(08) VALUE SPACES.
+      *6762016047-2-FIN
 
       *    PENDIENTE DE CARTERA.
            COPY DIPENDTE.
+      *SDA-34398-INI
+       01  QGECABC-01.
+           COPY QGECABC.
+
+      *    DEFINICION DE TABLAS DB2
+           EXEC SQL
+                INCLUDE SQLCA
+           END-EXEC.
+
+           EXEC SQL
+                INCLUDE DIGTMOV1
+           END-EXEC.
+      *SDA-34398-FIN
 
 
 
@@ -66,7 +91,10 @@
        LINKAGE SECTION.                                                 00001930
       *---------------*                                                 00001940
        01  DFHCOMMAREA.                                                 00001950
-           COPY  DIWC460.                                               00001790
+      *SDA-34398-INI
+      *    COPY  DIWC460.                                               00001790
+           COPY  DIWC46R.                                               00001790
+      *SDA-34398-FIN
 
       *==================*                                              00001970
        PROCEDURE DIVISION.                                              00001980
@@ -175,14 +203,82 @@
                  ADD  1                       TO  II
                  ADD  1                       TO  WS-OCURRENCIAS
                  MOVE W-NRODOC-INTO           TO  W460-NRODOC  (II)
+                 MOVE PCAR-NUMCLI             TO  W460-NUMBCOORI (II)
+      *6762016047-2-INI
+                 IF PCAR-TDOCUM EQUAL WSC-14
+                    MOVE PCAR-NUMCLI          TO WSV-PCAR-NUMCLI
+                    MOVE WSV-PCAR-NUMCLI-2    TO WSV-TALON-C
+                    MOVE WSV-PCAR-NUMCLI-1    TO W460-NUMBCOORI(II)(1:4)
+                    MOVE WSV-TALON-C(1:WSV-PCAR-NUMCLI-3)
+                                              TO W460-NUMBCOORI(II)(5:8)
+                 END-IF
+      *6762016047-2-FIN
                  MOVE W-FECVEN-INTO           TO  W460-FECVEN  (II)
                  MOVE W-IMPORTE-ACT-INTO      TO  W460-IMPORTE (II)
+      *SDA-34398-INI
+                 IF PCAR-MARCA7 EQUAL 'R'
+                    MOVE '1'                  TO  W460-SITUACION (II)
+                    PERFORM 900-SELECT-DIDTMOV
+                 ELSE
+                    MOVE '0'                  TO  W460-SITUACION (II)
+                 END-IF
+      *SDA-34398-FIN
                  MOVE W-NOMBRE-GIRADO-INTO    TO  W460-NOMBRE  (II)
                  MOVE W-TIPDOC-INTO           TO  W460-TIPO    (II)
                  MOVE W-CODCAR-INTO           TO  W460-CODCAR  (II)
               END-IF
            END-IF.
 
+
+      *SDA-34398-INI
+       900-SELECT-DIDTMOV.
+      *--------------------*
+           INITIALIZE DCLDIDTMOV
+      *
+           MOVE W-NRODOC-INTO        TO  MOV-NUMBCO
+           MOVE '00000000'           TO  MOV-NUMOPE
+           MOVE 'R'                  TO  MOV-INDOPE
+           MOVE 'I'                  TO  MOV-ESTADO-RENOV
+      *
+           EXEC SQL
+              SELECT  MOV_NUMBCO
+                     ,MOV_NUMOPE
+                     ,MOV_INDOPE
+                     ,MOV_IMPCOM
+                     ,MOV_CUENTA_COM
+                     ,MOV_ESTADO_RENOV
+                     ,MOV_FECVEN_RENOV
+               INTO  :MOV-NUMBCO
+                    ,:MOV-NUMOPE
+                    ,:MOV-INDOPE
+                    ,:MOV-IMPCOM
+                    ,:MOV-CUENTA-COM
+                    ,:MOV-ESTADO-RENOV
+                    ,:MOV-FECVEN-RENOV
+                FROM DIDTMOV
+               WHERE MOV_NUMBCO       = : MOV-NUMBCO
+                 AND MOV_NUMOPE       > : MOV-NUMOPE
+                 AND MOV_INDOPE       = : MOV-INDOPE
+                 AND MOV_ESTADO_RENOV = : MOV-ESTADO-RENOV
+           END-EXEC
+      *
+           EVALUATE SQLCODE
+               WHEN ZEROS
+                    MOVE '2'                TO W460-SITUACION (II)
+                    MOVE ZEROES             TO W460-IMPORTE (II)
+                    MOVE MOV-IMPCOM         TO W460-IMPORTE (II)
+               WHEN +100
+                    CONTINUE
+               WHEN -811
+                    MOVE '81'                  TO W460-CODRETOR
+                    MOVE 'DUPLICADO NUMOPE'    TO W460-REFERENC
+                    PERFORM  900-FIN-PROGRAMA
+               WHEN OTHER
+                    MOVE '99'                  TO W460-CODRETOR
+                    MOVE 'NO EXISTE NUMOPE'    TO W460-REFERENC
+                    PERFORM  900-FIN-PROGRAMA
+           END-EVALUATE.
+      *SDA-34398-FIN
 
        210-BUSCA-CANCELADO.
       *--------------------*
