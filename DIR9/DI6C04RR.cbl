@@ -1,5 +1,5 @@
        IDENTIFICATION DIVISION.                                         00000010
-       PROGRAM-ID. DI6C0461.                                            00000020
+       PROGRAM-ID. DI6C04RR.                                            00000020
       *************************************************************     00000030
       **                                                         **     00000030
       **  CONSULTA  -    PENDIENTES   CARTERA                    **     00000030
@@ -98,7 +98,7 @@
        01  DFHCOMMAREA.                                                 00001950
       *SDA-34398-INI
       *    COPY  DIWC460.                                               00001790
-           COPY  DIWC46R.                                               00001790
+           COPY  DIWC4RR.                                               00001790
       *SDA-34398-FIN
 
       *==================*                                              00001970
@@ -129,7 +129,7 @@
       *PAGSIZE-INI
        110-VALIDA-PAGSIZE.
       *-------------------*
-      *    EL MAXIMO ES EL OCCURS DE W460-OPERACIONES EN DIWC46R (100).
+      *    EL MAXIMO ES EL OCCURS DE W460-OPERACIONES EN DIWC4RR (100).
       *    PAGSIZE NO INFORMADO (CERO / NO NUMERICO) = COMPATIBILIDAD
       *    CON LOS CONSUMIDORES ACTUALES, SE ASUME EL MAXIMO.
       *    PAGSIZE MAYOR AL MAXIMO SE LIMITA AL MAXIMO.

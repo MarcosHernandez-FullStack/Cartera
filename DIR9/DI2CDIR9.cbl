@@ -40,7 +40,7 @@
        01  WSC-CONSTANTES.
            05 CON-DI2CDIR9          PIC X(08)       VALUE 'DI2CDIR9'.
            05 CON-DI7C0PRC          PIC X(08)       VALUE 'DI7C0PRC'.
-           05 CON-DI6C0461          PIC X(08)       VALUE 'DI6C0461'.
+           05 CON-DI6C04RR          PIC X(08)       VALUE 'DI6C04RR'.
            05 CON-QCCECSO0          PIC X(08)       VALUE 'QCCECSO0'.
            05 CON-DIECBD4A          PIC X(08)       VALUE 'DIECBD4A'.
            05 CON-DIECBS4A          PIC X(08)       VALUE 'DIECBS4A'.
@@ -110,10 +110,10 @@
        01  DIWC0PRC-1.
            COPY DIWC0PRC.
       *
-      *---- COPY AREA DE TRABAJO DE LA RUTINA DI6C0460
+      *---- COPY AREA DE TRABAJO DE LA RUTINA DI6C04RR
       *
-       01  W-DIWC46R.
-           COPY DIWC46R.
+       01  W-DIWC4RR.
+           COPY DIWC4RR.
       *
       *---- COPY RUTINA DE DESCRIPCON DE DIVISA
            COPY TCWC1200.
@@ -238,7 +238,7 @@
 
       *PAGSIZE-INI
       *    SI EL CANAL NO INFORMA TAMANO DE PAGINA SE NORMALIZA A CERO
-      *    Y LA RUTINA DI6C0461 ASUME EL MAXIMO. LA VALIDACION CONTRA
+      *    Y LA RUTINA DI6C04RR ASUME EL MAXIMO. LA VALIDACION CONTRA
       *    EL MAXIMO (100) LA RESUELVE LA RUTINA.
            IF BE02-BPAGSIZE IS NOT NUMERIC
               MOVE ZEROS                       TO BE02-BPAGSIZE
@@ -339,7 +339,7 @@
       *
        2200-CONSULTAR-DOCUMENTOS.
       ***************************
-           INITIALIZE W-DIWC46R
+           INITIALIZE W-DIWC4RR
            MOVE BE02-USUARIO1                   TO W460-NUM-CODCEN-ENT
       *PAGSIZE-INI
            MOVE BE02-BPAGSIZE                   TO W460-PAGSIZE
@@ -353,14 +353,14 @@
       *
 
            EXEC CICS
-                LINK PROGRAM (CON-DI6C0461)
-                COMMAREA     (W-DIWC46R)
+                LINK PROGRAM (CON-DI6C04RR)
+                COMMAREA     (W-DIWC4RR)
            END-EXEC
 
            IF EIBRESP NOT = DFHRESP(NORMAL) THEN
-              MOVE 'ERROR LINK DI6C0461'    TO ABC-REFERENCIA
+              MOVE 'ERROR LINK DI6C04RR'    TO ABC-REFERENCIA
               MOVE W460-CODRETOR            TO CAA-COD-ERROR
-              MOVE CON-DI6C0461             TO CAA-OBJETO-ERROR
+              MOVE CON-DI6C04RR             TO CAA-OBJETO-ERROR
               PERFORM 4100-ERRORES-CICS
               PERFORM 3000-FIN
            END-IF
@@ -370,7 +370,7 @@
            ELSE
               MOVE CON-DIE0141              TO CAA-COD-ERROR
               MOVE W460-REFERENC            TO CAA-VAR1-ERROR
-              MOVE CON-DI6C0461             TO CAA-OBJETO-ERROR
+              MOVE CON-DI6C04RR             TO CAA-OBJETO-ERROR
               PERFORM 3000-FIN
            END-IF
 
