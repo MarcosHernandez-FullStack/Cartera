@@ -32,6 +32,7 @@
               04 WS-CODSER            PIC 9(02)        VALUE ZEROS.     00320000
            02 WS-FECOPE               PIC 9(08)        VALUE ZEROS.     00330000
        01  WS-FIN                     PIC 9            VALUE ZEROS.     00340000
+       01  WS-HAY-MAS                 PIC 9            VALUE ZEROS.
        01  N                          PIC 9(05)        VALUE ZEROS.     00350000
        01  WS-CODIGO-LEOS             PIC 9(03)        VALUE ZEROS.     00360000
        01  WS-MAXITEM                 PIC 9(05)        VALUE 200.
@@ -141,20 +142,25 @@
                                                                         01330000
        105-INICIALIZA-PAGINACION.
       *_____________________________
-           MOVE 200                                   TO WS-MAXITEM
-           IF W0091-INDPAGI = 'S'
-                IF W0091-PAGSIZE IS NUMERIC AND
-                   W0091-PAGSIZE > 0        AND
-                   W0091-PAGSIZE <= 200
-                     MOVE W0091-PAGSIZE                TO WS-MAXITEM
-                END-IF
+      *    EL MAXIMO ES EL OCCURS DE W0091-DETALLE EN DIWC0091 (200).
+      *    PAGSIZE NO INFORMADO (CERO / NO NUMERICO) = COMPATIBILIDAD
+      *    CON LOS CONSUMIDORES ACTUALES, SE ASUME EL MAXIMO.
+      *    PAGSIZE MAYOR AL MAXIMO SE LIMITA AL MAXIMO.
+      *    W0091-INDPAGI NO INTERVIENE AQUI: ES CAMPO DE SALIDA.
+           IF  W0091-PAGSIZE NOT NUMERIC       OR
+               W0091-PAGSIZE = ZEROS           OR
+               W0091-PAGSIZE > 200
+                MOVE 200                       TO WS-MAXITEM
            ELSE
-                MOVE SPACES                            TO W0091-PAGINAC
+                MOVE W0091-PAGSIZE             TO WS-MAXITEM
            END-IF.
                                                                         01330000
        110-POSICIONA-PRIMERO.                                           01340000
       *_____________________                                            01350000
-           IF W0091-INDPAGI = 'S' AND W0091-PAGINAC NOT = SPACES
+      *    PAGINAC INFORMADO = PETICION DE CONTINUACION. SU CLAVE ES LA
+      *    DEL PRIMER REGISTRO NO ENTREGADO EN LA PAGINA ANTERIOR, POR
+      *    ESO EL STARTBR GTEQ CAE JUSTO EN EL QUE TOCA LEER.
+           IF W0091-PAGINAC NOT = SPACES
                 MOVE W0091-CODIGO                     TO WS-CODIGO
                 MOVE W0091-PAGINAC(1:33)              TO DIED-KEY
            ELSE
@@ -194,54 +200,31 @@
                 PERFORM 900-FIN-PROGRAMA                                01650000
            END-EVALUATE.                                                01660000
                                                                         01670000
-           IF W0091-INDPAGI = 'S' AND W0091-PAGINAC NOT = SPACES
-                PERFORM 115-DESCARTA-CURSOR-PAGINACION
-           END-IF.
-                                                                        01670000
-       115-DESCARTA-CURSOR-PAGINACION.
-      *_______________________________
-      *    DESCARTA EL REGISTRO YA ENTREGADO EN LA PAGINA ANTERIOR,
-      *    CUYA CLAVE SE USO PARA REPOSICIONAR EL STARTBR (GTEQ).
-           EXEC CICS READNEXT  DATASET   ('DIDIEDES')                   02080000
-                               RIDFLD    (DIED-KEY)                     02090000
-                               KEYLENGTH (+33)                          02100000
-                               INTO      (REG-DIDIEDES)                 02110000
-                               LENGTH    (WS-DIDIEDES-LENGTH)           02120000
-                               RESP      (RESPONSE)                     02130000
-                               NOHANDLE                                 02140000
-           END-EXEC.                                                    02150000
-                                                                        02160000
-           EVALUATE RESPONSE                                            02170000
-           WHEN DFHRESP(NORMAL)                                         02180000
-                CONTINUE
-           WHEN DFHRESP(ENDFILE)                                        02310000
-                MOVE 1                                TO WS-FIN         02320000
-           WHEN OTHER                                                   02330000
-                MOVE '96'                             TO W0091-CODRETOR 02340000
-                MOVE 'ERROR DIDIEDES READNEXT'        TO W0091-REFERENC 02350013
-                MOVE 'DIE9196'                        TO W0091-DIRCAPLN 02351020
-                PERFORM 900-FIN-PROGRAMA                                02360000
-           END-EVALUATE.                                                02370000
-                                                                        01670000
        200-MODULO-CENTRAL.                                              01680000
       *__________________                                               01690000
            PERFORM 240-LLENA-SALIDA-TITULOS.                            01710000
-           IF WS-FIN = 0
-                PERFORM 220-LEER-NEXT                                   01700000
-                PERFORM 230-LLENA-SALIDA                                01720000
-           END-IF.
                                                                         01730000
+      *    SE LLENAN COMO MAXIMO WS-MAXITEM OCURRENCIAS. EL CORTE POR
+      *    CAMBIO DE CODIGO Y EL FIN DE ARCHIVO LOS RESUELVE
+      *    220-LEER-NEXT (WS-FIN).
            PERFORM 210-OBTIENE-DATOS UNTIL                              01740000
                    WS-FIN            = 1              OR                01750000
                    WS-CODIGO     NOT = DIED-CODIGO    OR                01760000
                    N                >= WS-MAXITEM.                      01770000
                                                                         01780016
-           IF WS-FIN = 1
+      *    LECTURA DE ADELANTO: DETERMINA SI QUEDAN REGISTROS SIN
+      *    DEVOLVER, SIN CARGARLOS EN LA TABLA.
+           IF WS-FIN = 0
+                PERFORM 215-VERIFICA-HAY-MAS
+           END-IF.
+
+           IF WS-HAY-MAS = 1
+                MOVE 'S'                         TO W0091-INDPAGI
+                MOVE SPACES                      TO W0091-PAGINAC
+                MOVE DIED-KEY                    TO W0091-PAGINAC(1:33)
+           ELSE
                 MOVE 'N'                               TO W0091-INDPAGI
                 MOVE SPACES                            TO W0091-PAGINAC
-           ELSE
-                MOVE 'S'                         TO W0091-INDPAGI
-                MOVE DIED-KEY                    TO W0091-PAGINAC(1:33)
            END-IF.
 
            MOVE    WS-MAXITEM                          TO W0091-PAGSIZE
@@ -274,6 +257,23 @@
               END-IF                                                    02030000
            END-IF.                                                      02040000
                                                                         02050000
+       215-VERIFICA-HAY-MAS.
+      *____________________
+      *    AVANZA HASTA EL PRIMER REGISTRO DE DETALLE QUE NO ENTRO EN
+      *    ESTA PAGINA. SI EXISTE, SU CLAVE (DIED-KEY) ES EL CURSOR DE
+      *    PAGINACION DE LA PAGINA SIGUIENTE. LOS REGISTROS CON
+      *    NUMBCO DISTINTO DE CERO SON DE TOTALES Y 230-LLENA-SALIDA
+      *    NO LOS DEVUELVE, POR ESO SE SALTAN AQUI TAMBIEN.
+           MOVE ZEROS                                 TO WS-HAY-MAS
+           PERFORM UNTIL WS-FIN = 1 OR WS-HAY-MAS = 1
+              PERFORM 220-LEER-NEXT
+              IF WS-FIN NOT = 1
+                 IF DIED-NUMBCO = ZEROS
+                    MOVE 1                            TO WS-HAY-MAS
+                 END-IF
+              END-IF
+           END-PERFORM.
+
        220-LEER-NEXT.                                                   02060000
       *_____________                                                    02070000
            EXEC CICS READNEXT  DATASET   ('DIDIEDES')                   02080000
