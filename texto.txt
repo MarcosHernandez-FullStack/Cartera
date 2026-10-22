@@ -1,0 +1,12 @@
+OBJETIVO DEL REPORTE:
+Obtener todas las cuentas sueldo (PEN y USD) formalizadas en el día que tengan como origen las APERTURAS MASIVAS, con el fin de conocer el canal de formalización, si fue por GloMo u Oficina.
+
+- APE_FECHA_PREAPE (Fecha Preapertura): Permite confirmar si la cuenta proviene de una solicitud masiva previa de la empresa y medir cuántos días tomó su formalización.
+- APE_REFEPOLI / APE_LIBRE_CAR (Ref. Lote / Contrato): Identifica el código del convenio corporativo o el lote enviado por el empleador para vincular la cuenta con su empresa de origen.
+- APE_CUENTA_MAD / APE_CENTRO_MAD (Cuenta Madre / Centro): Asocia la cuenta individual del colaborador con la cuenta matriz de la empresa para certificar que pertenece a un convenio de nómina.
+- APE_TIMEST_UMO (Hora de Modificación): Su marca de tiempo hora/minuto diferencia formalizaciones digitales en app móvil de trámites presenciales hechos en horario de oficina.
+- APE_UNIGEST (Unidad Gestora): Identifica de forma directa si la cartera y gestión de la cuenta pertenecen al canal de Banca Digital o a la Red de Sucursales.
+- APE_CENTRO_REM / APE_FECHA_REM (Centro / Fecha Remisión): Evidencia el centro operativo u oficina física de destino asignado para la entrega de contratos o la tarjeta de débito.
+- APE_IND_SOLOOFI (Marca Solo Oficina): Permite validar si la cuenta tiene habilitación para operar en canales digitales o si fue restringida únicamente al canal presencial.
+- APE_FECHA_CONFIR / APE_FECHA_ULTCONF (Fecha Confirmación): Registra el momento exacto de firma y aceptación del contrato, ya sea por biometría en GloMo o por firma física en oficina.
+- APE_TARIFA (Tarifa de Cuenta): Valida que la cuenta mantenga los beneficios tarifarios y exoneraciones pactadas en el convenio de sueldo y no se haya abierto como cuenta regular.
